@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&nbsp;</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f1e7;
+    --ink: #1f3a2e;
+    --muted: #5d7266;
+    --accent: #b3392f;
+    --line: #d9d1bf;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17251e;
+      --ink: #f1ead8;
+      --muted: #9db0a4;
+      --accent: #e0685c;
+      --line: #2c4337;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    padding: 28px 20px 24px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+  }
+  .number {
+    font-family: "Fraunces", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(88px, 28vw, 132px);
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: -0.03em;
+    font-variant-numeric: lining-nums;
+  }
+  .label {
+    margin-top: 10px;
+    font-size: 1.15rem;
+    font-weight: 500;
+  }
+  .date {
+    margin-top: 6px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .bar {
+    margin: 20px auto 0;
+    height: 6px;
+    max-width: 300px;
+    background: var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar > span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    border-radius: 3px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .bar > span { transition: width 0.9s ease-out; }
+  }
+</style>
+</head>
+<body>
+  <main class="card" aria-live="polite">
+    <div class="number" id="days">–</div>
+    <p class="label" id="label">jours avant Noël</p>
+    <p class="date" id="date"></p>
+    <div class="bar" aria-hidden="true"><span id="fill"></span></div>
+  </main>
+
+<script>
+  (function () {
+    var DAY = 24 * 60 * 60 * 1000;
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var year = now.getFullYear();
+    var christmas = new Date(year, 11, 25);
+
+    // Après Noël : on vise le Noël de l'année suivante
+    if (today > christmas) {
+      year += 1;
+      christmas = new Date(year, 11, 25);
+    }
+
+    var days = Math.round((christmas - today) / DAY);
+    var numberEl = document.getElementById("days");
+    var labelEl = document.getElementById("label");
+
+    if (days === 0) {
+      numberEl.textContent = "🎄";
+      labelEl.textContent = "Joyeux Noël !";
+    } else {
+      numberEl.textContent = days;
+      labelEl.textContent = (days === 1 ? "jour" : "jours") + " avant Noël";
+    }
+
+    document.getElementById("date").textContent =
+      "Noël : " + christmas.toLocaleDateString("fr-FR", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      });
+
+    // Barre de progression : du 1er novembre au 25 décembre
+    var start = new Date(year, 10, 1);
+    var total = christmas - start;
+    var done = Math.min(Math.max(today - start, 0), total);
+    var pct = total > 0 ? Math.round((done / total) * 100) : 100;
+    requestAnimationFrame(function () {
+      document.getElementById("fill").style.width = pct + "%";
+    });
+  })();
+</script>
+</body>
+</html>
